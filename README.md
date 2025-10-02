@@ -44,9 +44,9 @@ fi
 ## 6) Sample Output (CLI)
 ```
 📄 File: samples/insecure_web_app.yml
-  [1] 🔴 HTTP_WITHOUT_TLS
-      📍 Location: play[0].tasks[0]
-      💡 Fix: Use HTTPS instead of HTTP
+  [1]  HTTP_WITHOUT_TLS
+       Location: play[0].tasks[0]
+       Fix: Use HTTPS instead of HTTP
 ```
 
 ## 7) Quick Start (TL;DR)
