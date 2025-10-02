@@ -1,0 +1,55 @@
+---
+# Example playbook with multiple security smells for testing
+- name: Deploy insecure web application
+  hosts: webservers
+  become: yes
+  
+  tasks:
+    - name: Install packages with HTTP repository
+      yum:
+        name: nginx
+        baseurl: http://download.example.com/packages
+        state: present
+    
+    - name: Configure web server with open binding
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        line: "listen 0.0.0.0:80;"
+        state: present
+    
+    - name: Set database connection with hardcoded credentials
+      template:
+        src: db_config.j2
+        dest: /etc/app/database.conf
+      vars:
+        db_password: "admin123"
+        api_key: "sk-1234567890abcdef1234567890abcdef"
+    
+    - name: Create admin user with weak password
+      user:
+        name: admin
+        password: "password"
+        state: present
+    
+    - name: Configure application with weak crypto
+      copy:
+        content: |
+          [security]
+          hash_algorithm=md5
+          encryption_cipher=des
+        dest: /etc/app/security.conf
+    
+    - name: Download application from insecure source
+      get_url:
+        url: http://downloads.untrusted-site.com/app.tar.gz
+        dest: /tmp/app.tar.gz
+        checksum: md5:5d41402abc4b2a76b9719d911017c592
+    
+    - name: Set up API endpoint with hardcoded token
+      blockinfile:
+        path: /etc/app/api.conf
+        block: |
+          api_endpoint: http://api.example.com/v1
+          access_token: ghp_1234567890abcdefghij1234567890abcdef
+          aws_access_key_id: AKIAIOSFODNN7EXAMPLE
+          aws_secret_access_key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY

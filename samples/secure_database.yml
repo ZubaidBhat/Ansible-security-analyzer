@@ -1,0 +1,67 @@
+---
+- name: Setup secure PostgreSQL database
+  hosts: database
+  become: true
+  vars_files:
+    - "{{ playbook_dir }}/vault/db_secrets.yml"
+  
+  pre_tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+  
+  tasks:
+    - name: Install PostgreSQL from HTTPS mirror
+      apt:
+        name: postgresql
+        state: present
+      environment:
+        APT_MIRROR: "https://mirror.example.com/ubuntu"
+    
+    - name: Configure PostgreSQL to listen on localhost only
+      lineinfile:
+        path: /etc/postgresql/14/main/postgresql.conf
+        regexp: "^listen_addresses"
+        line: "listen_addresses = 'localhost'"
+    
+    - name: Set postgres user password from vault
+      postgresql_user:
+        name: postgres
+        password: "{{ vault_postgres_password }}"
+        encrypted: yes
+    
+    - name: Create application database
+      postgresql_db:
+        name: appdb
+        owner: postgres
+    
+    - name: Create application user with strong password
+      postgresql_user:
+        name: appuser
+        password: "{{ vault_app_user_password }}"
+        db: appdb
+        priv: "ALL"
+        encrypted: yes
+    
+    - name: Configure backup with strong encryption
+      cron:
+        name: "Database backup"
+        hour: "2"
+        minute: "0"
+        job: "pg_dump appdb | openssl enc -aes-256-cbc -pbkdf2 -pass file:/etc/backup.key > /backup/db.enc"
+    
+    - name: Store database URL using environment variable
+      copy:
+        content: |
+          DATABASE_URL=postgresql://appuser:{{ vault_app_user_password }}@localhost:5432/appdb
+        dest: /etc/database.env
+        mode: '0600'
+        owner: postgres
+        group: postgres
+  
+  handlers:
+    - name: restart postgresql
+      service:
+        name: postgresql
+        state: restarted

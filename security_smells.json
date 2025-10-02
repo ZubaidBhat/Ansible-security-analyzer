@@ -1,0 +1,195 @@
+{
+  "total_smells": 16,
+  "smells": [
+    {
+      "type": "OPEN_BINDING",
+      "file": "samples/database_setup.yml",
+      "location": "play[0].tasks[1]",
+      "task_name": "Configure PostgreSQL to listen on all interfaces",
+      "module": "lineinfile",
+      "description": "Service bound to all interfaces (0.0.0.0) in parameter 'line'",
+      "fix": "Bind to specific interface (e.g., 127.0.0.1 for localhost only)",
+      "severity": "MEDIUM",
+      "content": "listen_addresses = '0.0.0.0'"
+    },
+    {
+      "type": "WEAK_PASSWORD",
+      "file": "samples/database_setup.yml",
+      "location": "play[0].tasks[2]",
+      "task_name": "Set postgres user password",
+      "module": "postgresql_user",
+      "description": "Weak password '12345' in parameter 'password'",
+      "fix": "Use a strong password with mix of characters, stored in Ansible Vault",
+      "severity": "HIGH",
+      "content": "12345"
+    },
+    {
+      "type": "WEAK_PASSWORD",
+      "file": "samples/database_setup.yml",
+      "location": "play[0].tasks[4]",
+      "task_name": "Create application user with weak password",
+      "module": "postgresql_user",
+      "description": "Weak password 'password123' in parameter 'password'",
+      "fix": "Use a strong password with mix of characters, stored in Ansible Vault",
+      "severity": "HIGH",
+      "content": "password123"
+    },
+    {
+      "type": "OPEN_BINDING",
+      "file": "samples/database_setup.yml",
+      "location": "play[0].tasks[6]",
+      "task_name": "Store database credentials in config",
+      "module": "copy",
+      "description": "Service bound to all interfaces (0.0.0.0) in parameter 'content'",
+      "fix": "Bind to specific interface (e.g., 127.0.0.1 for localhost only)",
+      "severity": "MEDIUM",
+      "content": "DATABASE_URL=postgresql://appuser:password123@0.0.0.0:5432/appdb\nBACKUP_KEY=backup123\nSECRET_KEY=thi"
+    },
+    {
+      "type": "HTTP_WITHOUT_TLS",
+      "file": "samples/api_deployment.yml",
+      "location": "play[0].tasks[0]",
+      "task_name": "Clone repository with embedded token",
+      "module": "git",
+      "description": "Insecure HTTP URL found in repo",
+      "fix": "Use HTTPS instead of HTTP for secure communication",
+      "severity": "HIGH",
+      "content": "http://github-token:ghp_1234567890@github.com/company/api.git"
+    },
+    {
+      "type": "HTTP_WITHOUT_TLS",
+      "file": "samples/api_deployment.yml",
+      "location": "play[0].tasks[1]",
+      "task_name": "Install dependencies from insecure registry",
+      "module": "npm",
+      "description": "Insecure HTTP URL found in registry",
+      "fix": "Use HTTPS instead of HTTP for secure communication",
+      "severity": "HIGH",
+      "content": "http://npm.internal.company.com"
+    },
+    {
+      "type": "OPEN_BINDING",
+      "file": "samples/api_deployment.yml",
+      "location": "play[0].tasks[4]",
+      "task_name": "Configure service to bind to all interfaces",
+      "module": "copy",
+      "description": "Service bound to all interfaces (0.0.0.0) in parameter 'content'",
+      "fix": "Bind to specific interface (e.g., 127.0.0.1 for localhost only)",
+      "severity": "MEDIUM",
+      "content": "{\n  \"host\": \"0.0.0.0\",\n  \"port\": 3000,\n  \"ssl\": false,\n  \"auth\": {\n    \"algorithm\": \"sha1\",\n    \"sec"
+    },
+    {
+      "type": "WEAK_CRYPTOGRAPHY",
+      "file": "samples/api_deployment.yml",
+      "location": "play[0].tasks[4]",
+      "task_name": "Configure service to bind to all interfaces",
+      "module": "copy",
+      "description": "Weak cryptographic algorithm SHA1 found: SHA1 is deprecated for security use",
+      "fix": "Use strong algorithms like SHA256, SHA3, or AES",
+      "severity": "HIGH",
+      "content": "{\n  \"host\": \"0.0.0.0\",\n  \"port\": 3000,\n  \"ssl\": false,\n  \"auth\": {\n    \"algorithm\": \"sha1\",\n    \"sec"
+    },
+    {
+      "type": "OPEN_BINDING",
+      "file": "samples/api_deployment.yml",
+      "location": "play[0].tasks[5]",
+      "task_name": "Create SSL certificate with weak algorithm",
+      "module": "command",
+      "description": "Service bound to all interfaces (0.0.0.0) in parameter '_raw'",
+      "fix": "Bind to specific interface (e.g., 127.0.0.1 for localhost only)",
+      "severity": "MEDIUM",
+      "content": "openssl req -x509 -nodes -days 365 -newkey rsa:1024 \\\n-keyout /opt/api/server.key -out /opt/api/serv"
+    },
+    {
+      "type": "HTTP_WITHOUT_TLS",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[0]",
+      "task_name": "Install packages with HTTP repository",
+      "module": "yum",
+      "description": "Insecure HTTP URL found in baseurl",
+      "fix": "Use HTTPS instead of HTTP for secure communication",
+      "severity": "HIGH",
+      "content": "http://download.example.com/packages"
+    },
+    {
+      "type": "OPEN_BINDING",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[1]",
+      "task_name": "Configure web server with open binding",
+      "module": "lineinfile",
+      "description": "Service bound to all interfaces (0.0.0.0) in parameter 'line'",
+      "fix": "Bind to specific interface (e.g., 127.0.0.1 for localhost only)",
+      "severity": "MEDIUM",
+      "content": "listen 0.0.0.0:80;"
+    },
+    {
+      "type": "WEAK_PASSWORD",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[3]",
+      "task_name": "Create admin user with weak password",
+      "module": "user",
+      "description": "Weak password 'password' in parameter 'password'",
+      "fix": "Use a strong password with mix of characters, stored in Ansible Vault",
+      "severity": "HIGH",
+      "content": "password"
+    },
+    {
+      "type": "WEAK_CRYPTOGRAPHY",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[4]",
+      "task_name": "Configure application with weak crypto",
+      "module": "copy",
+      "description": "Weak cryptographic algorithm MD5 found: MD5 is cryptographically broken",
+      "fix": "Use strong algorithms like SHA256, SHA3, or AES",
+      "severity": "HIGH",
+      "content": "[security]\nhash_algorithm=md5\nencryption_cipher=des\n"
+    },
+    {
+      "type": "HTTP_WITHOUT_TLS",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[5]",
+      "task_name": "Download application from insecure source",
+      "module": "get_url",
+      "description": "Insecure HTTP URL found in url",
+      "fix": "Use HTTPS instead of HTTP for secure communication",
+      "severity": "HIGH",
+      "content": "http://downloads.untrusted-site.com/app.tar.gz"
+    },
+    {
+      "type": "HTTP_WITHOUT_TLS",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[6]",
+      "task_name": "Set up API endpoint with hardcoded token",
+      "module": "blockinfile",
+      "description": "Insecure HTTP URL found in block",
+      "fix": "Use HTTPS instead of HTTP for secure communication",
+      "severity": "HIGH",
+      "content": "api_endpoint: http://api.example.com/v1\naccess_token: ghp_1234567890abcdefghij1234567890abcdef\naws_a"
+    },
+    {
+      "type": "HARDCODED_SECRET",
+      "file": "samples/insecure_web_app.yml",
+      "location": "play[0].tasks[6]",
+      "task_name": "Set up API endpoint with hardcoded token",
+      "module": "blockinfile",
+      "description": "Hardcoded Access token found in parameter 'block'",
+      "fix": "Use Ansible Vault or environment variables to store secrets",
+      "severity": "HIGH",
+      "content": "api_endpoint: http://api.example.com/v1\naccess_tok..."
+    }
+  ],
+  "summary": {
+    "by_type": {
+      "OPEN_BINDING": 5,
+      "WEAK_PASSWORD": 3,
+      "HTTP_WITHOUT_TLS": 5,
+      "WEAK_CRYPTOGRAPHY": 2,
+      "HARDCODED_SECRET": 1
+    },
+    "by_severity": {
+      "MEDIUM": 5,
+      "HIGH": 11
+    },
+    "files_affected": 3
+  }
+}

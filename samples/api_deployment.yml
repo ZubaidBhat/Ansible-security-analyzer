@@ -1,0 +1,61 @@
+---
+- name: Deploy REST API service
+  hosts: api_servers
+  become: yes
+  vars:
+    api_token: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0"
+    github_token: "ghp_abcdef1234567890abcdef1234567890abcdef"
+    
+  tasks:
+    - name: Clone repository with embedded token
+      git:
+        repo: "http://github-token:ghp_1234567890@github.com/company/api.git"
+        dest: /opt/api
+    
+    - name: Install dependencies from insecure registry
+      npm:
+        path: /opt/api
+        registry: "http://npm.internal.company.com"
+    
+    - name: Configure API service
+      template:
+        src: api_config.j2
+        dest: /opt/api/config.json
+      vars:
+        jwt_secret: "super-secret-key-123"
+        stripe_api_key: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+    
+    - name: Set environment variables
+      lineinfile:
+        path: /etc/environment
+        line: "{{ item }}"
+      with_items:
+        - "API_KEY=1234567890abcdef"
+        - "DATABASE_PASSWORD=admin"
+        - "REDIS_PASSWORD="
+    
+    - name: Configure service to bind to all interfaces
+      copy:
+        content: |
+          {
+            "host": "0.0.0.0",
+            "port": 3000,
+            "ssl": false,
+            "auth": {
+              "algorithm": "sha1",
+              "secret": "weak"
+            }
+          }
+        dest: /opt/api/server.json
+    
+    - name: Create SSL certificate with weak algorithm
+      command: |
+        openssl req -x509 -nodes -days 365 -newkey rsa:1024 \
+        -keyout /opt/api/server.key -out /opt/api/server.crt \
+        -subj "/C=US/ST=State/L=City/O=Company/CN=0.0.0.0"
+    
+    - name: Start API service
+      systemd:
+        name: api
+        state: started
+        enabled: yes

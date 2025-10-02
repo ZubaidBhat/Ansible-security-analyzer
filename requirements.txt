@@ -1,0 +1,17 @@
+# Core dependencies
+PyYAML>=6.0
+matplotlib>=3.5.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+xgboost>=2.0.0
+
+# Explainability
+shap>=0.42.0
+lime>=0.2.0
+
+# Feature Engineering
+networkx>=3.0  # For graph features
+nltk>=3.8      # For text processing
